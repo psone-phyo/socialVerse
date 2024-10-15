@@ -21,4 +21,11 @@ Route::group(['prefix' => 'edu'], function(){
     Route::put('/{education}', [EducationController::class, 'update']);
 });
 Route::get('/users/{id?}', [UserController::class, 'get']);
+Route::group(['prefix' => 'user'], function(){
+    Route::post('/create', [UserController::class, 'create']);
+    Route::delete('/delete/{id?}', [UserController::class, 'delete']);
+    Route::put('/update', [UserController::class, 'update']);
+
+
+});
 

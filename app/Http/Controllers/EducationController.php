@@ -22,8 +22,19 @@ class EducationController extends Controller
                 $data = $id != 0 ? University::find($id) : University::all();
             }elseif ($education == 'colleges'){
                 $data = $id != 0 ? College::find($id) : College::all();
+            }else{
+                return response()->json([
+                    'error' => 'Please check your URI. URI not found',
+                    'status' => 404
+                ],404);
             }
             if($data != null){
+                if (count($data) <= 0){
+                    return response()->json([
+                        'data' => 'There is no data yet.',
+                        'status' => '200'
+                    ],200);
+                }
                 return response()->json([
                     'data' => $data,
                     'status' => '200'
