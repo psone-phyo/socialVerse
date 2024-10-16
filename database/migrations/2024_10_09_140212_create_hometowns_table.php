@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('hometowns', function (Blueprint $table) {
             $table->id();
-            $table->string('hometown');
-            $table->timestamps();
+            $table->string('name');
+            $table->smallInteger('city_id');
+            $table->timestamps();   
         });
     }
 

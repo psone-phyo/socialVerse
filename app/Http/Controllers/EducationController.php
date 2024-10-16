@@ -141,12 +141,12 @@ class EducationController extends Controller
     public function update(Request $request, $education){
         try{
             if($request->id != null && $request->name != null){
-                $data = ['name' => $request->name];
+                $updatedata = ['name' => $request->name];
                 $id  = $request->id;
                 if ($education == 'schools'){
                     $data = School::find($id);
                     if ($data != null){
-                        School::find($id)->update($data);
+                        School::find($id)->update($updatedata);
                         $updatedData = School::find($id);
                     }else{
                         return response()->json([
@@ -157,7 +157,7 @@ class EducationController extends Controller
                 }elseif ($education == 'universities'){
                     $data = University::find($id);
                     if ($data != null){
-                        University::find($id)->update($data);
+                        University::find($id)->update($updatedata);
                         $updatedData = University::find($id);
                     }else{
                         return response()->json([
@@ -168,7 +168,7 @@ class EducationController extends Controller
                 }elseif ($education == 'colleges'){
                     $data = College::find($id);
                     if ($data != null){
-                        College::find($id)->update($data);
+                        College::find($id)->update($updatedata);
                         $updatedData = College::find($id);
                     }else{
                         return response()->json([
