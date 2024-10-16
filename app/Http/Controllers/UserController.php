@@ -8,58 +8,56 @@ use App\Models\School;
 use App\Models\College;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function get($id = null){
-        try{
-            if ($id == null){
+    public function get($id = null)
+    {
+        try {
+            if ($id == null) {
                 $data = User::all();
-            }else{
+            } else {
                 $data = User::find($id);
             }
 
-            if ($data != null){
+            if ($data != null) {
                 $dataCount = $data->toArray();
-                if (count($dataCount) == 0){
+                if (count($dataCount) == 0) {
                     return response()->json([
                         'data' => 'There is no data yet.',
                         'status' => '200'
-                    ],200);
+                    ], 200);
                 }
                 return response()->json([
                     'data' => $data,
                     'status' => 200
-                ],200);
-            }else{
+                ], 200);
+            } else {
                 return response()->json([
                     'data' => "the user with id $id is not found",
                     'status' => 400
-                ],400);
+                ], 400);
             }
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'data' => $e,
                 'status' => '500'
-            ],500);
+            ], 500);
         }
-
     }
 
 
     public function create(Request $request)
     {
         try {
-            $data = $this->getdata($request);
+            $data = $this->getdata($request, 'create');
             //validation
             $validation = $this->validation($data, 'create');
             if ($validation->fails()) {
-                $errors = collect($validation->errors()->toArray())
-                ->map(function ($error) {
-                    return $error[0];  // Get the first error message only
-                });
+                $errors = $this->returnvalidation($validation);
                 return response()->json(['error' => $errors, 'status' => 400], 400);
             }
 
@@ -75,7 +73,7 @@ class UserController extends Controller
             return response()->json([
                 'data' => $data,
                 'status' => '201'
-            ],201);
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
@@ -84,16 +82,17 @@ class UserController extends Controller
         }
     }
 
-    public function delete($id = null){
-        try{
-            if ($id == null){
+    public function delete($id = null)
+    {
+        try {
+            if ($id == null) {
                 return response()->json([
                     'error' => 'No id is given to delete.',
                     'status' => 400
-                ],400);
+                ], 400);
             }
             $deletedData = User::find($id);
-            if ($deletedData != null){
+            if ($deletedData != null) {
                 $deletedData->delete();
                 if (Storage::disk('public')->exists('profile/' . $deletedData->profile)) {
                     Storage::disk('public')->delete('profile/' . $deletedData->profile);
@@ -101,33 +100,30 @@ class UserController extends Controller
                 return response()->json([
                     'deletedData' => $deletedData,
                     'status' => 200
-                ],200);
-            }else{
+                ], 200);
+            } else {
                 return response()->json([
                     'data' => "the id $id is not found",
                     'status' => 400
-                ],400);
+                ], 400);
             }
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
                 'status' => 500
-            ],500);
+            ], 500);
         }
     }
 
     public function update(Request $request)
     {
         try {
-            $data = $this->getdata($request);
             $data['id'] = $request->id;
+            $data += $this->getdata($request);
             //validation
             $validation = $this->validation($data, 'update');
             if ($validation->fails()) {
-                $errors = collect($validation->errors()->toArray())
-                ->map(function ($error) {
-                    return $error[0];  // Get the first error message only
-                });
+                $errors = $this->returnvalidation($validation);
                 return response()->json(['error' => $errors, 'status' => 400], 400);
             }
             //photo saved
@@ -148,7 +144,7 @@ class UserController extends Controller
             return response()->json([
                 'updatedData' => $data,
                 'status' => '201'
-            ],201);
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
@@ -157,12 +153,140 @@ class UserController extends Controller
         }
     }
 
-    //get the data in key value format for database
-    private function getdata($request){
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
+    //change only name
+    public function updateName(Request $request)
+    {
+        try {
+            $data = [
+                'id' => $request->id,
+                'name' => $request->name
+            ];
+            $validation = Validator::make($data, [
+                'id' => 'required|integer|exists:users,id',
+                'name' => 'required',
+            ]);
+            if ($validation->fails()) {
+                $errors = $this->returnvalidation($validation);
+                return response()->json(['error' => $errors, 'status' => 400], 400);
+            }
+                User::find($request->id)->update([
+                    "name" => $request->name
+                ]);
+                $updatedData = User::find($request->id);
+                return response()->json([
+                    'updatedData' => $updatedData,
+                    "status" => "200"
+                ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "error" => $e,
+                "status" => 500
+            ], 500);
+        }
+    }
+
+    //change email
+    public function updateEmail(Request $request)
+    {
+        try {
+            $data = [
+                'id' => $request->id,
+                'email' => $request->email
+            ];
+            $validation = Validator::make($data, [
+                'id' => 'required|integer|exists:users,id',
+                'email' => 'required|unique:users,email,' . $request->id,
+            ]);
+            if ($validation->fails()) {
+                $errors = $this->returnvalidation($validation);
+                return response()->json(['error' => $errors, 'status' => 400], 400);
+            }
+            User::find($request->id)->update([
+                "email" => $request->email
+            ]);
+            $updatedData = User::find($request->id);
+            return response()->json([
+                'updatedData' => $updatedData,
+                "status" => "200"
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                "error" => $e,
+                "status" => 500
+            ], 500);
+        }
+    }
+
+    /**
+     * change password
+     * @param id, oldpassword, newpassword
+     */
+
+    public function changePassword(Request $request)
+    {
+        try {
+            $data = $this->getdata($request, 'changepassword');
+            $validation = Validator::make($data, [
+                'id' => 'required|integer|exists:users,id',
+                'oldpassword' => 'required|min:8|max:12',
+                'newpassword' => 'required|min:8|max:12'
+            ]);
+            if ($validation->fails()) {
+                $errors = $this->returnvalidation($validation);
+                return response()->json(['error' => $errors, 'status' => 400], 400);
+            }
+
+            $password = User::select('password')->where('id', $request->id)->first();
+            $password = $password->getOriginal()['password'];
+            $correctpw = Hash::check($request->oldpassword, $password);
+            if ($correctpw) {
+                User::find($request->id)->update([
+                    'password' => Hash::make($request->newpassword)
+                ]);
+                return response()->json([
+                    'success' => 'Password was successfully updated',
+                    'status' => '200'
+                ], 200);
+            } else {
+                return response()->json([
+                    'fail' => 'Current password is incorrect.',
+                    'status' => '400'
+                ], 400);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => $e,
+                "status" => 500
+            ], 500);
+        }
+    }
+
+    private function returnvalidation($validation)
+    {
+        return collect($validation->errors()->toArray())
+            ->map(function ($error) {
+                return $error[0];  // Get the first error message only
+            });
+    }
+
+    //change the request data to array format for validation
+    private function getdata($request, $action = 'default')
+    {
+        $data = [];
+        if ($action == 'changepassword') {  //for only change password
+            return [
+                'id' => $request->id,
+                'oldpassword' => $request->oldpassword,
+                'newpassword' => $request->newpassword
+            ];
+        }
+
+        if ($action == 'create') {
+            $data['name'] = $request->name;
+            $data['password'] = $request->password;
+            $data['email'] = $request->email;
+        }
+        $data += [
             'phone' => $request->phone,
             'profile' => $request->profile,
             'bio' => $request->bio,
@@ -177,34 +301,28 @@ class UserController extends Controller
             'college_id' => $request->college_id,
             'university_id' => $request->university_id,
         ];
-        return Arr::where($data, function ($value) {
-            return !is_null($value);
-        });
-
+        return $data;
     }
 
     //validation function for user profile
     private function validation($data, $action)
     {
         $rules = [];
-        if ($action == 'create'){
+        if ($action == 'create') {
             $rules = [
                 'name' => 'required',
                 'email' => 'required',
                 'password' => 'required|min:8|max:12',
             ];
-
-        }else{
+        } else {
             $rules = [
                 'id' => 'required|integer|exists:users,id'
             ];
         }
-        if (isset($data['phone'])){
+        if (isset($data['phone'])) {
             $rules['phone'] = 'required|numeric|min_digits:8|max_digits:15';
         }
 
         return Validator::make($data, $rules);
     }
-
-
 }

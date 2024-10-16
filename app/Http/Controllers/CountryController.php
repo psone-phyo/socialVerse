@@ -16,7 +16,7 @@ class CountryController extends Controller
         try{
             $data = $id != null ? Country::find($id) : Country::all();
             if($data != null){
-                if (count($data) <= 0){
+                if (count($data->toArray()) <= 0){
                     return response()->json([
                         'data' => 'There is no data yet.',
                         'status' => '200'

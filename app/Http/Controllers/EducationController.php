@@ -7,69 +7,71 @@ use App\Models\School;
 use App\Models\College;
 use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class EducationController extends Controller
 {
-        /**
+    /**
      * showing data in school table
      * @param
      */
-    public function get($education, $id = 0){
-        try{
-            if ($education == 'schools'){
+    public function get($education, $id = 0)
+    {
+        try {
+            if ($education == 'schools') {
                 $data = $id != 0 ? School::find($id) : School::all();
-            }elseif ($education == 'universities'){
+            } elseif ($education == 'universities') {
                 $data = $id != 0 ? University::find($id) : University::all();
-            }elseif ($education == 'colleges'){
+            } elseif ($education == 'colleges') {
                 $data = $id != 0 ? College::find($id) : College::all();
-            }else{
+            } else {
                 return response()->json([
                     'error' => 'Please check your URI. URI not found',
                     'status' => 404
-                ],404);
+                ], 404);
             }
-            if($data != null){
-                if (count($data) <= 0){
+            if ($data != null) {
+                if (count($data->toArray()) <= 0) {
                     return response()->json([
                         'data' => 'There is no data yet.',
                         'status' => '200'
-                    ],200);
+                    ], 200);
                 }
                 return response()->json([
                     'data' => $data,
                     'status' => '200'
-                ],200);
-            }else{
+                ], 200);
+            } else {
                 return response()->json([
                     'error' => "the id $id is not found in $education category",
                     'status' => '400'
-                ],200);
+                ], 200);
             };
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
                 'status' => 500
-            ],500);
+            ], 500);
         }
-
     }
 
     /**
      * create data in database
      * @param name
      */
-    public function store(Request $request, $education){
-        try{
-            if ($request->name != null){
-                if ($education == 'schools'){
+    public function store(Request $request, $education)
+    {
+        try {
+            if ($request->name != null) {
+                if ($education == 'schools') {
                     $data = School::create([
                         'name' => $request->name,
                     ]);
-                }elseif ($education == 'universities'){
+                } elseif ($education == 'universities') {
                     $data = University::create([
                         'name' => $request->name,
                     ]);
-                }elseif ($education == 'colleges'){
+                } elseif ($education == 'colleges') {
                     $data = College::create([
                         'name' => $request->name,
                     ]);
@@ -77,121 +79,127 @@ class EducationController extends Controller
                 return response()->json([
                     'data' => $data,
                     'status' => '201'
-                ],201);
-            }else{
+                ], 201);
+            } else {
                 return response()->json([
-                    'error' => 'the name cannot be null',
+                    'error' => 'the name is required',
                     'status' => 400
-                ],400);
+                ], 400);
             }
-
-        }catch (Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
                 'status' => 500
-            ],500);
+            ], 500);
         };
-
     }
 
-     /**
+    /**
      * delete data in database
      * @param id
      */
-    public function delete($education, $id = 0){
-        try{
+    public function delete($education, $id = 0)
+    {
+        try {
             if ($id == 0) {
                 return response()->json([
                     'error' => 'No id is given to delete.',
                     'status' => 400
                 ]);
             }
-            if ($education == 'schools'){
+            if ($education == 'schools') {
                 $deletedData = School::find($id);
-            }elseif ($education == 'universities'){
+            } elseif ($education == 'universities') {
                 $deletedData = University::find($id);
-            }elseif ($education == 'colleges'){
+            } elseif ($education == 'colleges') {
                 $deletedData = College::find($id);
             }
-            if($deletedData != null){
+            if ($deletedData != null) {
                 $deletedData->delete();
                 return response()->json([
                     'deletedData' => $deletedData,
                     'status' => 200
-                ],200);
+                ], 200);
             }
             return response()->json([
                 'error' => "the data of id $id is not found",
                 'status' => '400'
-            ],400);
-
-        }catch (Exception $e){
+            ], 400);
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
                 'status' => 500
-            ],500);
+            ], 500);
         };
-
     }
 
     /**
      * update data in database
      * @param id, name
      */
-    public function update(Request $request, $education){
-        try{
-            if($request->id != null && $request->name != null){
-                $updatedata = ['name' => $request->name];
-                $id  = $request->id;
-                if ($education == 'schools'){
-                    $data = School::find($id);
-                    if ($data != null){
-                        School::find($id)->update($updatedata);
-                        $updatedData = School::find($id);
-                    }else{
-                        return response()->json([
-                            'error' => "the id $id is not found",
-                            'status' => '400'
-                        ],400);
-                    }
-                }elseif ($education == 'universities'){
-                    $data = University::find($id);
-                    if ($data != null){
-                        University::find($id)->update($updatedata);
-                        $updatedData = University::find($id);
-                    }else{
-                        return response()->json([
-                            'error' => "the id $id is not found",
-                            'status' => '400'
-                        ],400);
-                    }
-                }elseif ($education == 'colleges'){
-                    $data = College::find($id);
-                    if ($data != null){
-                        College::find($id)->update($updatedata);
-                        $updatedData = College::find($id);
-                    }else{
-                        return response()->json([
-                            'error' => "the id $id is not found",
-                            'status' => '400'
-                        ],400);
-                    }
+    public function update(Request $request, $education)
+    {
+        try {
+            $data = [
+                'id' => $request->id,
+                'name' => $request->name
+            ];
+            $validation = Validator::make($data, [
+                'id' => 'required|integer',
+                'name' => 'required',
+            ]);
+            if ($validation->fails()) {
+                $errors = collect($validation->errors()->toArray())
+                    ->map(function ($error) {
+                        return $error[0];  // Get the first error message only
+                    });
+                return response()->json(['error' => $errors, 'status' => 400], 400);
+            }
+            $updatedata = ['name' => $request->name];
+            $id  = $request->id;
+            if ($education == 'schools') {
+                $data = School::find($id);
+                if ($data != null) {
+                    School::find($id)->update($updatedata);
+                    $updatedData = School::find($id);
+                } else {
+                    return response()->json([
+                        'error' => "the id $id is not found",
+                        'status' => '400'
+                    ], 400);
                 }
-                return response()->json([
-                    'updatedData' => $updatedData,
-                    'status' => 201
-                ],201);
+            } elseif ($education == 'universities') {
+                $data = University::find($id);
+                if ($data != null) {
+                    University::find($id)->update($updatedata);
+                    $updatedData = University::find($id);
+                } else {
+                    return response()->json([
+                        'error' => "the id $id is not found",
+                        'status' => '400'
+                    ], 400);
+                }
+            } elseif ($education == 'colleges') {
+                $data = College::find($id);
+                if ($data != null) {
+                    College::find($id)->update($updatedata);
+                    $updatedData = College::find($id);
+                } else {
+                    return response()->json([
+                        'error' => "the id $id is not found",
+                        'status' => '400'
+                    ], 400);
+                }
             }
             return response()->json([
-                'error' => "the data id and name cannot be null",
-                'status' => '400'
-            ],400);
-        }catch (Exception $e){
+                'updatedData' => $updatedData,
+                'status' => 201
+            ], 201);
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e,
                 'status' => 500
-            ],500);
+            ], 500);
         };
-
     }
 }

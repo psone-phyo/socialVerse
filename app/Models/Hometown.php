@@ -9,6 +9,6 @@ class hometown extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'hometown'
+        'name'
     ];
 }

@@ -21,11 +21,31 @@ Route::group(['prefix' => 'edu'], function(){
     Route::delete('/{education}/{id?}', [EducationController::class, 'delete']);
     Route::put('/{education}', [EducationController::class, 'update']);
 });
+
+//not used
+Route::group(['prefix' => 'address'], function(){
+    // (https://countriesnow.space/api/v0.1/countries) -> get all countries from postman api (get method)
+    // (https://countriesnow.space/api/v0.1/countries/cities) -> get cities by country (post method)
+
+    //country
+    Route::get('/countries/{id?}', [CountryController::class, 'get']);
+    Route::group(['prefix' => 'country'], function(){
+        Route::post('create', [CountryController::class, 'store']);
+        Route::delete('delete/{id?}', [CountryController::class, 'delete']);
+        Route::put('update', [CountryController::class, 'update']);
+    });
+});
+
+//user info
 Route::get('/users/{id?}', [UserController::class, 'get']);
 Route::group(['prefix' => 'user'], function(){
     Route::post('/create', [UserController::class, 'create']);
     Route::delete('/delete/{id?}', [UserController::class, 'delete']);
     Route::put('/update', [UserController::class, 'update']);
+    Route::put('/update/name', [UserController::class, 'updateName']);
+    Route::put('/update/email', [UserController::class, 'updateEmail']);
+    Route::put('/update/password', [UserController::class, 'changePassword']);
+
 });
 
 //user address
