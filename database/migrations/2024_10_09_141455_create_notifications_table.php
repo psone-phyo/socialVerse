@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('user_Id');
             $table->string('message');
             $table->boolean('seen');
+            $table->smallInteger('sender_id')->nullable();
             $table->timestamps();
         });
     }

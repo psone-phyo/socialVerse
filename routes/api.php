@@ -8,6 +8,9 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CountryController;
+use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkController;
 
@@ -72,4 +75,27 @@ Route::group(['prefix' => 'job'], function(){
     Route::post('/create', [WorkController::class, 'store']);
     Route::delete('/delete/{id?}', [WorkController::class, 'delete']);
     Route::put('/update', [WorkController::class, 'update']);
+});
+
+//friend request
+Route::group(['prefix' => 'friend'], function(){
+    Route::post('/add-friend', [FriendshipController::class, 'addFriend']);
+    Route::post('/accept-friend', [FriendshipController::class, 'acceptFriend']);
+    Route::delete('/reject-request', [FriendshipController::class, 'rejectFriend']);
+    Route::delete('/unfriend', [FriendshipController::class, 'unfriend']);
+});
+
+//notification
+Route::group(['prefix' => 'notification'], function(){
+    Route::post('/seen', [NotificationController::class, 'readNotification']);
+    Route::get('/get/{user_id}', [NotificationController::class, 'get']);
+});
+
+//post
+Route::group(['prefix' => 'post'], function(){
+    Route::post('/create', [PostController::class, 'store']);
+    Route::put('/update', [PostController::class, 'update']);
+    Route::get('/get/{user_id}', [PostController::class, 'get']);
+    Route::delete('/delete/{id}', [PostController::class, 'delete']);
+
 });
