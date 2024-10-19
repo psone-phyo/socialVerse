@@ -102,6 +102,16 @@ class PostController extends Controller
 
     public function delete($id){
         try{
+            $validation = Validator::make(['id' => $id],[
+                'id' => "required|integer|exists:posts,id"
+            ]);
+            if ($validation->fails()){
+                $errors = $this->returnvalidation($validation);
+                return response()->json([
+                    'error' => $errors,
+                    'status' => 400
+                ],400);
+            }
             Post::find($id)->delete();
             return response()->json([
                 'status' => 204

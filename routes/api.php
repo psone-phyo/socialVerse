@@ -2,17 +2,18 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\EducationController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\FriendshipController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkController;
+use App\Http\Controllers\ImageController;
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EducationController;
+use App\Http\Controllers\FriendshipController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 //     return $request->user();
@@ -97,5 +98,5 @@ Route::group(['prefix' => 'post'], function(){
     Route::put('/update', [PostController::class, 'update']);
     Route::get('/get/{user_id}', [PostController::class, 'get']);
     Route::delete('/delete/{id}', [PostController::class, 'delete']);
-
+    // Route::post('/image/store', [ImageController::class, 'storeImage']);
 });
