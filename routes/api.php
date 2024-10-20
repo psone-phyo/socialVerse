@@ -14,6 +14,8 @@ use App\Http\Controllers\FriendshipController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\LikeController;
 
 // Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 //     return $request->user();
@@ -99,4 +101,16 @@ Route::group(['prefix' => 'post'], function(){
     Route::get('/get/{user_id}', [PostController::class, 'get']);
     Route::delete('/delete/{id}', [PostController::class, 'delete']);
     // Route::post('/image/store', [ImageController::class, 'storeImage']);
+
+    //like
+    Route::post('/like', [LikeController::class, 'like']);
+    Route::post('/dislike', [LikeController::class, 'dislike']);
+
+    //comment
+    Route::group(['prefix' => 'comment'], function(){
+        Route::post('/create', [CommentController::class, 'create']);
+        Route::get('/get/{post_id}', [CommentController::class, 'get']);
+        Route::put('/update', [CommentController::class, 'update']);
+        Route::delete('/delete/{comment_id}', [CommentController::class, 'delete']);
+    });
 });

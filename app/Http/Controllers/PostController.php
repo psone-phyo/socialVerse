@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Post;
 use App\Models\college;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -42,6 +43,10 @@ class PostController extends Controller
         }
     }
 
+    /**
+     * create post
+     * @param user_id, content, privacy
+     */
     public function store(Request $request){
         try{
             $data = $this->arrangeData($request);
@@ -66,6 +71,10 @@ class PostController extends Controller
         }
     }
 
+    /**
+     * update post
+     * @param id (post_id) , user_id, content, privacy
+     */
     public function update(Request $request){
         try{
             $data = [
@@ -100,6 +109,10 @@ class PostController extends Controller
         }
     }
 
+    /**
+     * create post
+     * @param id (post_id`)
+     */
     public function delete($id){
         try{
             $validation = Validator::make(['id' => $id],[
@@ -113,6 +126,7 @@ class PostController extends Controller
                 ],400);
             }
             Post::find($id)->delete();
+            Comment::where('post_id', $id)->delete();
             return response()->json([
                 'status' => 204
             ],204);

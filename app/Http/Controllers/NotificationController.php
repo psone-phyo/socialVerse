@@ -18,6 +18,7 @@ class NotificationController extends Controller
             'users.profile')
             ->leftjoin('users', 'users.id', 'notifications.sender_id')
             ->where('user_id', $user_id)
+            ->orderby('notifications.created_at', 'desc')
             ->get();
 
             return response()->json([
