@@ -53,6 +53,8 @@ Route::group(['prefix' => 'user'], function(){
     Route::put('/update/name', [UserController::class, 'updateName']);
     Route::put('/update/email', [UserController::class, 'updateEmail']);
     Route::put('/update/password', [UserController::class, 'changePassword']);
+    Route::post('/store/image', [UserController::class, 'imagestore']);
+
 
 });
 

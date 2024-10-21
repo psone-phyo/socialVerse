@@ -8,6 +8,7 @@ use App\Models\School;
 use App\Models\College;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -50,6 +51,24 @@ class UserController extends Controller
     }
 
 
+    public function imagestore(Request $request)
+    {
+        try {
+            $imagename = uniqid() . '_sv_' . $request->file('profile')->getClientOriginalName();
+            $request->file('profile')->storeAs('profile', $imagename, 'public');
+            return response()->json([
+                'data' => "/storage/profile/" . $imagename,
+                'status' => 200
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'data' => $e,
+                'status' => '500'
+            ], 500);
+        }
+
+    }
+
     public function create(Request $request)
     {
         try {
@@ -60,15 +79,6 @@ class UserController extends Controller
                 $errors = $this->returnvalidation($validation);
                 return response()->json(['error' => $errors, 'status' => 400], 400);
             }
-
-            //photo saved
-            if (isset($data['profile'])) {
-                $imagename = uniqid() . $data['profile'];
-                $imagepath = 'profile/' . $imagename;
-                Storage::disk('public')->put($imagepath, $imagename);
-                $data['profile'] = $imagename;
-            }
-
             $data = User::create($data);
             return response()->json([
                 'data' => $data,
@@ -94,8 +104,11 @@ class UserController extends Controller
             $deletedData = User::find($id);
             if ($deletedData != null) {
                 $deletedData->delete();
-                if (Storage::disk('public')->exists('profile/' . $deletedData->profile)) {
-                    Storage::disk('public')->delete('profile/' . $deletedData->profile);
+                if ($deletedData->profile){
+                    $filePath = public_path($deletedData->profile);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
                 }
                 return response()->json([
                     'deletedData' => $deletedData,
@@ -129,14 +142,14 @@ class UserController extends Controller
             //photo saved
             if (isset($data['profile'])) {
                 $oldphoto = User::select('profile')->where('id', $data['id'])->first();
-                $oldphoto = $oldphoto->getOriginal();
-                if (Storage::disk('public')->exists('profile/' . $oldphoto['profile'])) {
-                    Storage::disk('public')->delete('profile/' . $oldphoto['profile']);
+                $oldphoto = $oldphoto->getOriginal()['profile'];
+
+                if ($oldphoto){
+                    $filePath = public_path($oldphoto);
+                    if (File::exists($filePath)) {
+                        File::delete($filePath);
+                    }
                 }
-                $imagename = uniqid() . $data['profile'];
-                $imagepath = 'profile/' . $imagename;
-                Storage::disk('public')->put($imagepath, $imagename);
-                $data['profile'] = $imagename;
             }
 
             User::find($request->id)->update($data);
@@ -169,14 +182,14 @@ class UserController extends Controller
                 $errors = $this->returnvalidation($validation);
                 return response()->json(['error' => $errors, 'status' => 400], 400);
             }
-                User::find($request->id)->update([
-                    "name" => $request->name
-                ]);
-                $updatedData = User::find($request->id);
-                return response()->json([
-                    'updatedData' => $updatedData,
-                    "status" => "200"
-                ], 200);
+            User::find($request->id)->update([
+                "name" => $request->name
+            ]);
+            $updatedData = User::find($request->id);
+            return response()->json([
+                'updatedData' => $updatedData,
+                "status" => "200"
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 "error" => $e,
